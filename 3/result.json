@@ -1,0 +1,22 @@
+{
+  "summary": "The passage examines the growing trend of remote work, particularly following the global pandemic. It outlines key advantages such as improved job satisfaction, flexible work-life balance, and reduced company expenses. It also acknowledges significant drawbacks including employee isolation, reduced collaboration, and performance monitoring issues. Despite these challenges, the text notes a promising future for remote and hybrid work models aided by technological advancements.",
+  "sentiment": {
+    "classification": "neutral",
+    "score": 0.2
+  },
+  "metadata": {
+    "length_words": 205,
+    "topic": "remote work and hybrid work models",
+    "tone": "balanced, analytical",
+    "notable_keywords": [
+      "remote work",
+      "telecommuting",
+      "pandemic",
+      "job satisfaction",
+      "flexibility",
+      "hybrid models",
+      "productivity",
+      "technology"
+    ]
+  }
+}

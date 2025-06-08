@@ -1,0 +1,46 @@
+I will provide you with a code snippet for a function named processUserData. Your task is to perform an in-depth, expert-level analysis of this code from three distinct professional perspectives. Please review the code sequentially as each of the following roles:
+
+Experienced Developer
+Focus on: code readability, maintainability, logic clarity, error handling, best practices, and potential refactoring opportunities.
+Provide: specific recommendations, stylistic or architectural improvements, and observations about how well the code adheres to general software engineering principles.
+
+Security Engineer
+Focus on: identifying any potential security vulnerabilities, data handling risks (e.g., sensitive information exposure, injection risks), authentication/authorization assumptions, and compliance concerns (e.g., GDPR, OWASP).
+Provide: clear explanations of the risk, practical fixes, and how to better secure the function.
+
+Performance Specialist
+Focus on: execution efficiency, resource usage (e.g., memory, CPU), scalability, and any bottlenecks or unnecessary computations.
+Provide: performance metrics (if inferable), profiling advice, and optimizations or algorithmic alternatives where relevant.
+
+Instructions:
+Perform each analysis independently, clearly labeling the role and section (e.g., "🔍 Developer Review", "🔒 Security Review", "⚙️ Performance Review").
+Be as specific and actionable as possible. Avoid generic feedback unless it's directly applicable to the code.
+Do not skip any role or merge their perspectives.
+
+Input Code:
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public List<Map<String, Object>> processUserData(List<Map<String, Object>> data) {
+    List<Map<String, Object>> users = new ArrayList<>();
+    
+    for (int i = 0; i < data.size(); i++) {
+        Map<String, Object> user = new HashMap<>();
+        user.put("id", data.get(i).get("id"));
+        user.put("name", data.get(i).get("name"));
+        user.put("email", data.get(i).get("email"));
+        user.put("active", data.get(i).get("status").equals("active") ? true : false);
+        users.add(user);
+    }
+    
+    System.out.println("Processed " + users.size() + " users");
+    
+    return users;
+}
+
+public boolean saveToDatabase(List<Map<String, Object>> users) {
+    // TODO: Implement database connection
+    boolean success = true;
+    return success;
+}

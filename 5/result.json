@@ -1,0 +1,47 @@
+[
+  {
+    "sentiment": "Negative",
+    "isRelevant": true,
+    "mainSubject": "Sensor reliability and hardware issues",
+    "positives": [],
+    "painPoints": [
+      "Sensor stops tracking intermittently",
+      "Problem occurs even at high polling rate (8000hz)",
+      "Problem persists in wired mode",
+      "Initial unit had a non-functional dongle",
+      "High price ($150) not justified by reliability"
+    ],
+    "improvementSuggestions": [
+      "Improve sensor stability at high polling rates",
+      "Ensure dongle functionality before shipping",
+      "Provide more robust quality assurance testing"
+    ],
+    "featuresMentioned": [
+      "Sensor",
+      "Polling rate (8000hz)",
+      "Wired connectivity",
+      "Dongle",
+      "Price"
+    ],
+    "userExpertise": "Experienced"
+  },
+  {
+    "sentiment": "Mixed",
+    "isRelevant": true,
+    "mainSubject": "Price-to-performance ratio",
+    "positives": [
+      "No flaws observed in the product"
+    ],
+    "painPoints": [
+      "Not worth the high price compared to similar lower-cost products"
+    ],
+    "improvementSuggestions": [
+      "Reduce price or add more unique value to justify premium cost"
+    ],
+    "featuresMentioned": [
+      "Price",
+      "Performance"
+    ],
+    "userExpertise": "Unknown"
+  }
+]

@@ -1,0 +1,32 @@
+You are an AI tasked with analyzing user feedback about a product. Your job is to extract structured insights that can help product teams make improvements. You will follow these steps:
+
+1. Read the user comment.
+2. Decide if the feedback is about the product. If not, set `"isRelevant": false` and skip other fields except `sentiment`.
+3. If relevant, reason through the feedback:
+   - What is the overall sentiment?
+   - What is the main subject of the feedback?
+   - What are the positives, if any?
+   - What are the pain points mentioned?
+   - Are there any improvement suggestions implied or stated?
+   - What features are mentioned?
+   - Based on language and detail, estimate the user’s expertise.
+
+Provide your output in the following JSON format:
+{
+  "sentiment": "Positive|Negative|Neutral|Mixed",
+  "isRelevant": true|false,
+  "mainSubject": "string or null",
+  "positives": ["list of positives"],
+  "painPoints": ["list of pain points"],
+  "improvementSuggestions": ["list of suggestions"],
+  "featuresMentioned": ["list of features"],
+  "userExpertise": "Experienced|Novice|Unknown"
+}
+
+I'll attach the file with 3 examples.
+
+Analyze the following comments:
+
+Comment A: "Sensor just stops tracking for like a half second kinda often even at 8000hz. I've also tried it plugged in and still the same problem. First one I got I had to return also because the dongle just didnt work, $150 mouse btw"
+
+Comment B: "Is it worth it? It is a product with no flaws in my opinion, if you love it go for it, but its not worth the price since you'll be able to perform the same with a cheaper product with half the specs."
