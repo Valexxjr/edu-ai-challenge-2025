@@ -82,7 +82,8 @@ python -m pytest battleship/tests/ --cov=battleship
 
 ## Controls
 
-- Enter coordinates in the format "A1" to "J10"
+- Enter coordinates in the format "00" to "99" (row and column numbers)
+- Example: "34" means row 3, column 4
 - Follow the on-screen prompts for ship placement and gameplay
 - Type 'quit' at any time to exit the game
 
