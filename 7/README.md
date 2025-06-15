@@ -70,12 +70,7 @@ python -m pytest battleship/tests/ --cov=battleship
 ## Game Rules
 
 1. The game is played on a 10x10 grid
-2. Each player has 5 ships of different lengths:
-   - Carrier (5 cells)
-   - Battleship (4 cells)
-   - Cruiser (3 cells)
-   - Submarine (3 cells)
-   - Destroyer (2 cells)
+2. Each player has 3 ships, each 3 cells long
 3. Players take turns firing at coordinates
 4. A ship is sunk when all its cells are hit
 5. The game ends when all ships of one player are sunk
