@@ -12,12 +12,17 @@ class GameManager:
         self.cpu = Player("CPU", is_cpu=True)
         self.display = DisplayManager()
         self.input_handler = InputHandler()
+        # Track previous ship counts
+        self.player_ships_remaining = 0
+        self.cpu_ships_remaining = 0
     
     def initialize_game(self):
         """Initialize the game by placing ships."""
         self.player.place_ships_randomly()
         self.cpu.place_ships_randomly()
-        self.display.print_welcome_message(self.cpu.board.get_ships_remaining())
+        self.player_ships_remaining = self.player.board.get_ships_remaining()
+        self.cpu_ships_remaining = self.cpu.board.get_ships_remaining()
+        self.display.print_welcome_message(self.cpu_ships_remaining)
     
     def player_turn(self):
         """Handle player's turn."""
@@ -35,8 +40,12 @@ class GameManager:
             
             self.display.print_shot_result(result, position)
             
-            if result == 'hit' and self.cpu.board.get_ships_remaining() < self.cpu.board.get_ships_remaining():
-                self.display.print_ship_sunk()
+            # Check if a ship was sunk
+            if result == 'hit':
+                current_ships = self.cpu.board.get_ships_remaining()
+                if current_ships < self.cpu_ships_remaining:
+                    self.display.print_ship_sunk()
+                    self.cpu_ships_remaining = current_ships
             
             return result
     
@@ -48,8 +57,12 @@ class GameManager:
         valid_shot, result = self.player.board.receive_shot(position)
         self.display.print_shot_result(result, position, is_player_shot=False)
         
-        if result == 'hit' and self.player.board.get_ships_remaining() < self.player.board.get_ships_remaining():
-            self.display.print_ship_sunk(is_player_shot=False)
+        # Check if a ship was sunk
+        if result == 'hit':
+            current_ships = self.player.board.get_ships_remaining()
+            if current_ships < self.player_ships_remaining:
+                self.display.print_ship_sunk(is_player_shot=False)
+                self.player_ships_remaining = current_ships
         
         self.cpu.update_target_queue(position, result)
         return result

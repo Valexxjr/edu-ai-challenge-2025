@@ -9,6 +9,7 @@ class Board:
         self.size = size
         self.grid = [[SYMBOLS['EMPTY'] for _ in range(size)] for _ in range(size)]
         self.ships = []
+        self.ships_remaining = 0
     
     def place_ship(self, ship, start_pos, orientation):
         """Place a ship on the board."""
@@ -21,6 +22,7 @@ class Board:
         # Place the ship
         ship.place(start_pos, orientation, self.size)
         self.ships.append(ship)
+        self.ships_remaining += 1
         
         # Update grid
         for i in range(ship.length):
@@ -41,6 +43,9 @@ class Board:
         for ship in self.ships:
             if ship.receive_hit(f"{row}{col}"):
                 self.grid[row][col] = SYMBOLS['HIT']
+                # Check if this hit sunk the ship
+                if ship.check_if_sunk():
+                    self.ships_remaining -= 1
                 return True, 'hit'
         
         self.grid[row][col] = SYMBOLS['MISS']
@@ -71,4 +76,4 @@ class Board:
     
     def get_ships_remaining(self):
         """Get the number of ships that haven't been sunk."""
-        return sum(1 for ship in self.ships if not ship.is_sunk()) 
+        return self.ships_remaining 

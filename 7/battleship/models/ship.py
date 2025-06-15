@@ -7,12 +7,14 @@ class Ship:
         self.length = length
         self.locations = []
         self.hits = []
+        self.is_sunk = False
     
     def place(self, start_pos, orientation, board_size):
         """Place the ship on the board starting from the given position."""
         row, col = start_pos
         self.locations = []
         self.hits = []
+        self.is_sunk = False
         
         for i in range(self.length):
             if orientation == 'horizontal':
@@ -21,14 +23,17 @@ class Ship:
                 self.locations.append(f"{row + i}{col}")
             self.hits.append('')
     
-    def is_sunk(self):
-        """Check if the ship is sunk."""
-        return all(hit == 'hit' for hit in self.hits)
-    
     def receive_hit(self, position):
-        """Record a hit on the ship."""
+        """Record a hit on the ship and check if it's sunk."""
         if position in self.locations:
             index = self.locations.index(position)
-            self.hits[index] = 'hit'
-            return True
-        return False 
+            if self.hits[index] != 'hit':  # Only process new hits
+                self.hits[index] = 'hit'
+                # Check if ship is now sunk
+                self.is_sunk = all(hit == 'hit' for hit in self.hits)
+                return True
+        return False
+    
+    def check_if_sunk(self):
+        """Check if the ship is sunk."""
+        return all(hit == 'hit' for hit in self.hits) 
