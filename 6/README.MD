@@ -25,19 +25,35 @@ This project implements the Enigma machine in Python, simulating the encryption 
 2. **Command-Line Mode**:
    - Run the script with a message as an argument for quick testing:
      ```bash
-     python enigma.py HELLOWORLD
+     python enigma.py "HELLO"
      ```
    - This will use default settings (rotor positions `[0, 0, 0]`, ring settings `[0, 0, 0]`, and no plugboard pairs).
 
 ## Testing
 
-The implementation includes a test suite to verify functionality:
+The implementation includes a comprehensive test suite in `enigma_test.py`. To run the tests:
 
-- **Basic Encryption/Decryption**: Ensures the machine can encrypt and decrypt messages correctly.
-- **Plugboard Functionality**: Tests the machine with plugboard connections.
-- **Different Rotor Positions**: Verifies the machine works with various rotor positions.
+```bash
+python enigma_test.py
+```
 
-For detailed test results, see the [test report](test_report.md).
+The test suite covers:
+- Basic encryption/decryption functionality
+- Plugboard swap operations
+- Different rotor position configurations
+
+## Implementation Details
+
+The code is organized into several key components:
+- `Rotor` class for individual rotor operations
+- `Enigma` class for the main machine functionality
+- Utility functions for modular operations
+
+The implementation follows the historical Enigma machine specifications, including:
+- Standard rotor wirings
+- Notch positions for rotor stepping
+- Reflector implementation
+- Plugboard functionality
 
 ## Fixes
 
