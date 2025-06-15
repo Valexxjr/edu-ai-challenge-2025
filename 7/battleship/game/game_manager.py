@@ -32,11 +32,11 @@ class GameManager:
             
             if not valid:
                 self.display.print_already_guessed()
-                continue
+                return 'already_guessed'
             
             valid_shot, result = self.cpu.board.receive_shot(position)
             if not valid_shot:
-                continue
+                return 'invalid_shot'
             
             self.display.print_shot_result(result, position)
             
@@ -54,7 +54,13 @@ class GameManager:
         position = self.cpu.get_next_guess()
         valid, guess = self.cpu.make_guess(position)
         
+        if not valid:
+            return 'already_guessed'
+        
         valid_shot, result = self.player.board.receive_shot(position)
+        if not valid_shot:
+            return 'invalid_shot'
+        
         self.display.print_shot_result(result, position, is_player_shot=False)
         
         # Check if a ship was sunk
@@ -85,13 +91,13 @@ class GameManager:
             self.display.print_board(self.player.board, self.cpu.board)
             
             # Player's turn
-            self.player_turn()
-            if self.is_game_over():
+            result = self.player_turn()
+            if result in ['hit', 'miss'] and self.is_game_over():
                 break
             
             # CPU's turn
-            self.cpu_turn()
-            if self.is_game_over():
+            result = self.cpu_turn()
+            if result in ['hit', 'miss'] and self.is_game_over():
                 break
         
         self.display.print_board(self.player.board, self.cpu.board) 

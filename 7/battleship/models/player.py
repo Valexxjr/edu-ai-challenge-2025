@@ -2,6 +2,7 @@
 Player class managing player state and actions.
 """
 
+import random
 from battleship.models.board import Board
 from battleship.models.ship import Ship
 from battleship.config import NUM_SHIPS, SHIP_LENGTH
@@ -17,8 +18,6 @@ class Player:
     
     def place_ships_randomly(self):
         """Place ships randomly on the board."""
-        import random
-        
         ships_placed = 0
         while ships_placed < NUM_SHIPS:
             orientation = 'horizontal' if random.random() < 0.5 else 'vertical'
@@ -71,8 +70,6 @@ class Player:
         """Get the next guess position for CPU player."""
         if not self.is_cpu:
             return None
-        
-        import random
         
         if not self.hunt_mode and self.target_queue:
             return self.target_queue.pop(0)
