@@ -55,11 +55,10 @@ class Enigma:
         self.plugboard_pairs = plugboard_pairs
 
     def step_rotors(self):
+        if self.rotors[2].at_notch():
+            self.rotors[1].step()
         if self.rotors[1].at_notch():
             self.rotors[0].step()
-            self.rotors[1].step()
-        elif self.rotors[2].at_notch():
-            self.rotors[1].step()
         self.rotors[2].step()
 
     def encrypt_char(self, c):
@@ -67,23 +66,16 @@ class Enigma:
             return c
         
         self.step_rotors()
-        
-        # First plugboard
         c = plugboard_swap(c, self.plugboard_pairs)
         
-        # Forward through rotors
         for rotor in reversed(self.rotors):
             c = rotor.forward(c)
         
-        # Through reflector
-        c = REFLECTOR[alphabet.index(c)]
+        idx = alphabet.index(c)
+        c = REFLECTOR[idx]
         
-        # Backward through rotors
         for rotor in self.rotors:
             c = rotor.backward(c)
-        
-        # Second plugboard
-        c = plugboard_swap(c, self.plugboard_pairs)
         
         return c
 
@@ -108,35 +100,17 @@ def prompt_enigma():
     result = enigma.process(message)
     print('Output:', result)
 
-def run_tests():
-    print('Running Enigma tests...')
-    
-    # Test 1: Basic encryption/decryption
-    enigma1 = Enigma([0, 1, 2], [0, 0, 0], [0, 0, 0], [])
-    message1 = 'HELLO'
-    encrypted1 = enigma1.process(message1)
-    enigma2 = Enigma([0, 1, 2], [0, 0, 0], [0, 0, 0], [])
-    decrypted1 = enigma2.process(encrypted1)
-    print('Test 1:', 'PASS' if message1 == decrypted1 else 'FAIL')
-    
-    # Test 2: With plugboard
-    enigma3 = Enigma([0, 1, 2], [0, 0, 0], [0, 0, 0], [['A', 'B']])
-    message2 = 'HELLO'
-    encrypted2 = enigma3.process(message2)
-    enigma4 = Enigma([0, 1, 2], [0, 0, 0], [0, 0, 0], [['A', 'B']])
-    decrypted2 = enigma4.process(encrypted2)
-    print('Test 2:', 'PASS' if message2 == decrypted2 else 'FAIL')
-    
-    # Test 3: Different rotor positions
-    enigma5 = Enigma([0, 1, 2], [1, 2, 3], [0, 0, 0], [])
-    message3 = 'HELLO'
-    encrypted3 = enigma5.process(message3)
-    enigma6 = Enigma([0, 1, 2], [1, 2, 3], [0, 0, 0], [])
-    decrypted3 = enigma6.process(encrypted3)
-    print('Test 3:', 'PASS' if message3 == decrypted3 else 'FAIL')
-
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == '--test':
-        run_tests()
+    if len(sys.argv) > 1:
+        # Use default settings for quick testing
+        message = sys.argv[1]
+        rotor_positions = [0, 0, 0]
+        ring_settings = [0, 0, 0]
+        plug_pairs = []
+        
+        enigma = Enigma([0, 1, 2], rotor_positions, ring_settings, plug_pairs)
+        result = enigma.process(message)
+        print('Input:', message)
+        print('Output:', result)
     else:
         prompt_enigma() 

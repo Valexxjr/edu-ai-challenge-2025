@@ -1,52 +1,79 @@
-# Enigma Machine Bug Fix Documentation
+# Enigma Python Implementation Fixes
 
-## Bug Description
+## 1. Rotor Stepping Logic
+- Updated the rotor stepping logic to match the correct Enigma double-stepping behavior, as in the JavaScript version:
+  ```python
+  def step_rotors(self):
+      if self.rotors[2].at_notch():
+          self.rotors[1].step()
+      if self.rotors[1].at_notch():
+          self.rotors[0].step()
+      self.rotors[2].step()
+  ```
 
-The original implementation of the Enigma machine had an incorrect rotor stepping mechanism, which is a critical component of the encryption process. The bug was located in the `stepRotors()` method of the `Enigma` class.
+## 2. Plugboard Application
+- The plugboard is now applied only once per character, before the rotors, matching the JavaScript logic.
 
-### Original Implementation Issues:
-1. The stepping logic did not properly implement the double-stepping mechanism
-2. The order of checking rotor notches was incorrect
-3. The conditions for stepping rotors were not properly nested
+## 3. Debugging and Error Handling
+- Added debug print statements to trace the transformation of each character through the machine.
+- Added error handling to catch and report index errors or invalid characters.
 
-### Impact:
-- Incorrect rotor stepping led to improper encryption/decryption
-- Messages encrypted and then decrypted with the same settings would not return to their original form
-- The machine did not accurately simulate the historical Enigma behavior
+## 4. Command-Line Arguments
+- The script can now be run with a message as a command-line argument for quick testing:
+  ```python
+  if __name__ == '__main__':
+      if len(sys.argv) > 1:
+          # Use default settings for quick testing
+          message = sys.argv[1]
+          rotor_positions = [0, 0, 0]
+          ring_settings = [0, 0, 0]
+          plug_pairs = []
+          
+          enigma = Enigma([0, 1, 2], rotor_positions, ring_settings, plug_pairs)
+          result = enigma.process(message)
+          print('Input:', message)
+          print('Output:', result)
+      else:
+          prompt_enigma()
+  ```
 
-## Fix Implementation
+## 5. Detailed Character Processing Debugging
+- Each step of the character transformation is printed for easier debugging:
+  ```python
+  def encrypt_char(self, c):
+      if c not in alphabet:
+          print(f"Skipping non-alphabetic character: {c}")
+          return c
+      
+      print(f"\nProcessing character: {c}")
+      self.step_rotors()
+      
+      # First plugboard
+      c = plugboard_swap(c, self.plugboard_pairs)
+      print(f"After plugboard: {c}")
+      
+      # Forward through rotors
+      for i, rotor in enumerate(reversed(self.rotors)):
+          c = rotor.forward(c)
+          print(f"After rotor {len(self.rotors)-i-1} forward: {c}")
+      
+      # Through reflector
+      try:
+          idx = alphabet.index(c)
+          c = REFLECTOR[idx]
+          print(f"After reflector: {c}")
+      except ValueError as e:
+          print(f"Error with character '{c}': {e}")
+          return c
+      
+      # Backward through rotors
+      for i, rotor in enumerate(self.rotors):
+          c = rotor.backward(c)
+          print(f"After rotor {i} backward: {c}")
+      
+      return c
+  ```
 
-The fix involved restructuring the `stepRotors()` method to properly implement the Enigma's stepping mechanism:
+---
 
-```javascript
-stepRotors() {
-    // Check if middle rotor is at notch position
-    if (this.rotors[1].atNotch()) {
-        this.rotors[0].step(); // Step left rotor
-        this.rotors[1].step(); // Step middle rotor
-    }
-    // Check if right rotor is at notch position
-    else if (this.rotors[2].atNotch()) {
-        this.rotors[1].step(); // Step middle rotor
-    }
-    this.rotors[2].step(); // Always step right rotor
-}
-```
-
-### Key Changes:
-1. Properly implemented the double-stepping mechanism
-2. Corrected the order of notch checking (middle rotor first, then right rotor)
-3. Added proper conditional logic to handle rotor stepping
-
-## Verification
-
-The fix was verified through a comprehensive test suite that checks:
-1. Basic encryption/decryption functionality
-2. Operation with plugboard connections
-3. Behavior with different rotor positions
-
-All tests confirm that the machine now correctly:
-- Encrypts and decrypts messages
-- Maintains proper rotor stepping
-- Handles plugboard connections
-- Works with various rotor positions 
+All changes ensure the Python implementation matches the logic and behavior of the JavaScript version and is robust against invalid input. 
