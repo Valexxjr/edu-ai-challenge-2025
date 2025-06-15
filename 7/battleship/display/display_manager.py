@@ -2,7 +2,7 @@
 DisplayManager class handling all game display and output.
 """
 
-from battleship.config import MESSAGES
+from battleship.config import MESSAGES, SYMBOLS
 
 class DisplayManager:
     @staticmethod
@@ -23,7 +23,10 @@ class DisplayManager:
         # Print rows
         for i in range(player_board.size):
             row_str = f"{i} "
-            row_str += ' '.join(cpu_board.grid[i])
+            # For opponent's board, show only hits and misses, hide ships
+            opponent_row = [cell if cell in [SYMBOLS['HIT'], SYMBOLS['MISS']] else SYMBOLS['EMPTY'] 
+                          for cell in cpu_board.grid[i]]
+            row_str += ' '.join(opponent_row)
             row_str += f"    {i} "
             row_str += ' '.join(player_board.grid[i])
             print(row_str)
