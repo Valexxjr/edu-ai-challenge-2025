@@ -8,14 +8,16 @@ A robust, type-safe validation library for Python that can validate complex data
 8/
 ├── schema/                    # Main package
 │   ├── __init__.py           # Exposes Schema, ValidationError, and all validators
-│   ├── core.py               # Schema and ValidationError classes
-│   └── validators.py         # All validator classes (StringValidator, etc.)
+│   ├── core.py               # Schema class and core functionality
+│   ├── validators.py         # All validator classes (StringValidator, etc.)
+│   └── errors.py             # ValidationError class
 ├── tests/                    # Test package
 │   ├── __init__.py
 │   └── test_schema.py        # All tests
-├── .gitignore               # Excludes __pycache__, etc.
-├── README.md                # Documentation
-└── requirements.txt         # Dependencies
+├── htmlcov/                  # Coverage reports (generated)
+├── README.md                 # Documentation
+├── requirements.txt          # Dependencies
+└── test_report.txt           # Test results (generated)
 ```
 
 ## Features
