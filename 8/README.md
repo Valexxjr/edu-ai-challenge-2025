@@ -2,6 +2,22 @@
 
 A robust, type-safe validation library for Python that can validate complex data structures with comprehensive error reporting and type checking.
 
+## Project Structure
+
+```
+8/
+├── schema/                    # Main package
+│   ├── __init__.py           # Exposes Schema, ValidationError, and all validators
+│   ├── core.py               # Schema and ValidationError classes
+│   └── validators.py         # All validator classes (StringValidator, etc.)
+├── tests/                    # Test package
+│   ├── __init__.py
+│   └── test_schema.py        # All tests
+├── .gitignore               # Excludes __pycache__, etc.
+├── README.md                # Documentation
+└── requirements.txt         # Dependencies
+```
+
 ## Features
 
 ### ✅ Type Safety
@@ -37,7 +53,7 @@ pip install -r requirements.txt
 ## Quick Start
 
 ```python
-from schema import Schema
+from schema import Schema, ValidationError
 
 # Define a simple schema
 user_schema = Schema.object({
@@ -58,6 +74,25 @@ try:
     print("✅ Validation successful!")
 except ValidationError as e:
     print(f"❌ Validation failed: {e}")
+```
+
+## Import Options
+
+### Main API (Recommended)
+```python
+from schema import Schema, ValidationError
+```
+
+### Individual Validators
+```python
+from schema import StringValidator, NumberValidator, BooleanValidator
+from schema import DateValidator, ObjectValidator, ArrayValidator
+```
+
+### Direct Module Imports
+```python
+from schema.core import Schema, ValidationError
+from schema.validators import StringValidator, NumberValidator
 ```
 
 ## Validator Types
@@ -295,14 +330,33 @@ def accepts_validator(validator: ValidatorProtocol) -> None:
 Run the test suite:
 
 ```bash
-python test_schema.py
+python -m pytest tests/
 ```
 
-Or use pytest for more detailed testing:
+Or run individual test files:
 
 ```bash
-pytest test_schema.py -v
+python tests/test_schema.py
 ```
+
+## Development
+
+### Project Structure Benefits
+
+- **Modularity**: Each component is in its own file for easy maintenance
+- **Scalability**: Easy to add new validators or features
+- **Testing**: Tests are properly organized in a separate package
+- **Import Clarity**: Clean import paths with `from schema import Schema`
+- **Growth Ready**: Structure supports future expansion and distribution
+
+### Adding New Validators
+
+To add a new validator:
+
+1. Add the validator class to `schema/validators.py`
+2. Import it in `schema/__init__.py`
+3. Add a static method to `Schema` class in `schema/core.py`
+4. Add tests to `tests/test_schema.py`
 
 ## Performance Considerations
 
@@ -317,6 +371,7 @@ pytest test_schema.py -v
 2. Add comprehensive tests for new features
 3. Use proper type hints and documentation
 4. Ensure backward compatibility
+5. Follow the modular structure for new components
 
 ## License
 

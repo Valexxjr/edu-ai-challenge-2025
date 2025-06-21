@@ -16,20 +16,6 @@ class ValidatorProtocol(Protocol):
     def validate(self, value: Any) -> Any: ...
     def with_message(self, message: str) -> Self: ...
 
-class ValidationError(Exception):
-    """Custom exception for validation errors with field path support"""
-    def __init__(self, message: str, field: Optional[str] = None, path: Optional[List[str]] = None):
-        self.message = message
-        self.field = field
-        self.path = path or []
-        super().__init__(self.message)
-    
-    def __str__(self) -> str:
-        if self.path:
-            path_str = " -> ".join(self.path)
-            return f"{path_str}: {self.message}"
-        return self.message
-
 class Validator(ABC):
     """Abstract base validator class with proper type safety"""
     
@@ -94,22 +80,22 @@ class StringValidator(Validator):
             return value
         
         if not isinstance(value, str):
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Expected string, got {type(value).__name__}"
             )
         
         if self._min_length is not None and len(value) < self._min_length:
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"String must be at least {self._min_length} characters long"
             )
         
         if self._max_length is not None and len(value) > self._max_length:
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"String must be at most {self._max_length} characters long"
             )
         
         if self._compiled_pattern is not None and not self._compiled_pattern.match(value):
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"String does not match pattern {self._pattern}"
             )
         
@@ -144,22 +130,22 @@ class NumberValidator(Validator):
             return value
         
         if not isinstance(value, (int, float)):
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Expected number, got {type(value).__name__}"
             )
         
         if self._integer_only and not isinstance(value, int):
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or "Expected integer, got float"
             )
         
         if self._min_value is not None and value < self._min_value:
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Value must be at least {self._min_value}"
             )
         
         if self._max_value is not None and value > self._max_value:
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Value must be at most {self._max_value}"
             )
         
@@ -183,7 +169,7 @@ class BooleanValidator(Validator):
         
         if self._strict:
             if not isinstance(value, bool):
-                raise ValidationError(
+                raise Exception(
                     self._custom_message or f"Expected boolean, got {type(value).__name__}"
                 )
             return value
@@ -232,7 +218,7 @@ class DateValidator(Validator):
             except (ValueError, OSError):
                 pass
         
-        raise ValidationError(
+        raise Exception(
             self._custom_message or f"Expected date, got {type(value).__name__}"
         )
 
@@ -260,14 +246,14 @@ class ObjectValidator(Validator, Generic[T]):
             return value
         
         if not isinstance(value, dict):
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Expected object, got {type(value).__name__}"
             )
         
         if self._strict and not self._allow_extra:
             extra_fields = set(value.keys()) - set(self.schema.keys())
             if extra_fields:
-                raise ValidationError(
+                raise Exception(
                     f"Unexpected fields: {', '.join(extra_fields)}"
                 )
         
@@ -276,14 +262,13 @@ class ObjectValidator(Validator, Generic[T]):
             if field_name in value:
                 try:
                     result[field_name] = validator.validate(value[field_name])
-                except ValidationError as e:
+                except Exception as e:
                     # Add field to error path
-                    e.path = e.path + [field_name]
-                    raise e
+                    raise Exception(f"{field_name}: {e}")
             elif hasattr(validator, '_optional') and validator._optional:
                 result[field_name] = None
             else:
-                raise ValidationError(f"Missing required field: {field_name}")
+                raise Exception(f"Missing required field: {field_name}")
         
         return result
 
@@ -321,17 +306,17 @@ class ArrayValidator(Validator, Generic[T]):
             return value
         
         if not isinstance(value, list):
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Expected array, got {type(value).__name__}"
             )
         
         if self._min_length is not None and len(value) < self._min_length:
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Array must have at least {self._min_length} items"
             )
         
         if self._max_length is not None and len(value) > self._max_length:
-            raise ValidationError(
+            raise Exception(
                 self._custom_message or f"Array must have at most {self._max_length} items"
             )
         
@@ -340,9 +325,8 @@ class ArrayValidator(Validator, Generic[T]):
             try:
                 validated_item = self.item_validator.validate(item)
                 result.append(validated_item)
-            except ValidationError as e:
-                e.path = e.path + [f"[{i}]"]
-                raise e
+            except Exception as e:
+                raise Exception(f"[{i}]: {e}")
         
         if self._unique:
             unique_items = set()
@@ -354,90 +338,7 @@ class ArrayValidator(Validator, Generic[T]):
                     item_str = str(item)
                 
                 if item_str in unique_items:
-                    raise ValidationError("Array items must be unique")
+                    raise Exception("Array items must be unique")
                 unique_items.add(item_str)
         
-        return result
-
-class Schema:
-    """Main schema builder class with type-safe static methods"""
-    
-    @staticmethod
-    def string() -> StringValidator:
-        """Create a string validator"""
-        return StringValidator()
-    
-    @staticmethod
-    def number() -> NumberValidator:
-        """Create a number validator"""
-        return NumberValidator()
-    
-    @staticmethod
-    def boolean() -> BooleanValidator:
-        """Create a boolean validator"""
-        return BooleanValidator()
-    
-    @staticmethod
-    def date() -> DateValidator:
-        """Create a date validator"""
-        return DateValidator()
-    
-    @staticmethod
-    def object(schema: Dict[str, Validator]) -> ObjectValidator:
-        """Create an object validator with nested schema"""
-        return ObjectValidator(schema)
-    
-    @staticmethod
-    def array(item_validator: Validator) -> ArrayValidator:
-        """Create an array validator with item validation"""
-        return ArrayValidator(item_validator)
-
-
-# Example usage and testing
-if __name__ == "__main__":
-    # Define a complex schema with enhanced type safety
-    address_schema = Schema.object({
-        'street': Schema.string().min_length(1).max_length(100),
-        'city': Schema.string().min_length(1).max_length(50),
-        'postalCode': Schema.string().pattern(r'^\d{5}$').with_message('Postal code must be 5 digits'),
-        'country': Schema.string().min_length(2).max_length(50)
-    })
-    
-    user_schema = Schema.object({
-        'id': Schema.string().min_length(1).with_message('ID must be a non-empty string'),
-        'name': Schema.string().min_length(2).max_length(50),
-        'email': Schema.string().pattern(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').with_message('Invalid email format'),
-        'age': Schema.number().min_value(0).max_value(150).integer_only().optional(),
-        'isActive': Schema.boolean(),
-        'tags': Schema.array(Schema.string().min_length(1)).min_length(0).max_length(10).unique(),
-        'address': address_schema.optional(),
-        'metadata': Schema.object({}).allow_extra().optional()
-    })
-    
-    # Test data
-    user_data = {
-        'id': "12345",
-        'name': "John Doe",
-        'email': "john@example.com",
-        'isActive': True,
-        'tags': ["developer", "designer"],
-        'address': {
-            'street': "123 Main St",
-            'city': "Anytown",
-            'postalCode': "12345",
-            'country': "USA"
-        },
-        'metadata': {
-            'created_at': "2024-01-01T00:00:00",
-            'extra_field': "should be allowed"
-        }
-    }
-    
-    try:
-        result = user_schema.validate(user_data)
-        print("✅ Validation successful!")
-        print(f"Validated data: {result}")
-    except ValidationError as e:
-        print(f"❌ Validation error: {e}")
-        if e.path:
-            print(f"Path: {' -> '.join(e.path)}") 
+        return result 
