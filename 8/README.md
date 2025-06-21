@@ -372,7 +372,3 @@ To add a new validator:
 3. Use proper type hints and documentation
 4. Ensure backward compatibility
 5. Follow the modular structure for new components
-
-## License
-
-MIT License - see LICENSE file for details. 
