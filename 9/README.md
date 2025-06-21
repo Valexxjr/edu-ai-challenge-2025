@@ -31,6 +31,16 @@ This application simulates a real-world scenario where product managers, investo
    ```bash
    pip install -r requirements.txt
    ```
+3. **Set your OpenAI API key as an environment variable** (required for AI-powered analysis):
+   - On Windows (PowerShell):
+     ```powershell
+     $env:OPENAI_API_KEY="sk-...yourkey..."
+     ```
+   - On macOS/Linux:
+     ```bash
+     export OPENAI_API_KEY="sk-...yourkey..."
+     ```
+   - **Never store your API key in the code or repository!**
 
 ### Basic Usage
 
@@ -160,6 +170,10 @@ For issues or questions:
 1. Check the documentation
 2. Review existing issues
 3. Create a new issue with detailed information
+
+## ⚠️ Security Note
+- **Never commit your OpenAI API key to your repository!**
+- Always use environment variables to keep your credentials safe.
 
 ---
 

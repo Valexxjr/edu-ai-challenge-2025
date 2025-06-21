@@ -9,6 +9,8 @@ import json
 import re
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+import os
+import openai
 
 
 @dataclass
@@ -46,6 +48,12 @@ class ServiceAnalyzer:
     def __init__(self):
         """Initialize the service analyzer."""
         self.known_services = self._load_known_services()
+        self.openai_api_key = os.environ.get("OPENAI_API_KEY")
+        if self.openai_api_key:
+            print(f"OpenAI API key detected: {self.openai_api_key[:10]}...")
+            openai.api_key = self.openai_api_key
+        else:
+            print("No OpenAI API key found. Using rule-based analysis.")
     
     def _load_known_services(self) -> Dict[str, Dict[str, Any]]:
         """Load known service information from a database."""
@@ -104,6 +112,14 @@ class ServiceAnalyzer:
         """Analyze a known service by name."""
         service_name_lower = service_name.lower().strip()
         
+        # Try OpenAI API first if available
+        if self.openai_api_key:
+            print(f"Attempting OpenAI analysis for service: {service_name}")
+            try:
+                return self._analyze_with_openai(service_name, "service_name")
+            except Exception as e:
+                print(f"OpenAI API failed: {e}. Falling back to rule-based analysis.")
+        
         if service_name_lower in self.known_services:
             service_data = self.known_services[service_name_lower]
             return ServiceInfo(
@@ -124,6 +140,13 @@ class ServiceAnalyzer:
     
     def analyze_description(self, description: str) -> ServiceInfo:
         """Analyze a service based on its description text."""
+        # Try OpenAI API first if available
+        if self.openai_api_key:
+            try:
+                return self._analyze_with_openai(description, "description")
+            except Exception as e:
+                print(f"OpenAI API failed: {e}. Falling back to rule-based analysis.")
+        
         # Extract service name from description
         service_name = self._extract_service_name(description)
         
@@ -253,4 +276,79 @@ class ServiceAnalyzer:
         if not weaknesses:
             weaknesses = ["Limited information available"]
         
-        return strengths, weaknesses 
+        return strengths, weaknesses
+    
+    def _analyze_with_openai(self, input_data: str, input_type: str) -> ServiceInfo:
+        """Use OpenAI API to analyze the service or description and extract all required fields."""
+        prompt = self._build_openai_prompt(input_data, input_type)
+        
+        # Use only gpt-4.1-mini
+        model = "gpt-4.1-mini"
+        
+        try:
+            print(f"Using model: {model}")
+            response = openai.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "You are a product analyst generating structured reports. Return only valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=800,
+                temperature=0.4
+            )
+            content = response.choices[0].message.content.strip()
+            
+            # Extract JSON from the response
+            import json
+            start_idx = content.find('{')
+            end_idx = content.rfind('}') + 1
+            if start_idx != -1 and end_idx != 0:
+                json_str = content[start_idx:end_idx]
+                data = json.loads(json_str)
+            else:
+                raise ValueError("No JSON found in response")
+            
+            return ServiceInfo(
+                name=data.get("name", "Unknown Service"),
+                description=data.get("description", "No description provided."),
+                founding_year=data.get("founding_year", "Unknown"),
+                target_audience=data.get("target_audience", []),
+                core_features=data.get("core_features", []),
+                unique_selling_points=data.get("unique_selling_points", []),
+                business_model=data.get("business_model", "Unknown"),
+                tech_stack=data.get("tech_stack", []),
+                strengths=data.get("strengths", []),
+                weaknesses=data.get("weaknesses", [])
+            )
+        except Exception as e:
+            print(f"Model {model} failed: {e}")
+            raise
+    
+    def _build_openai_prompt(self, input_data: str, input_type: str) -> str:
+        """Builds a prompt for OpenAI to extract all required report fields as JSON."""
+        if input_type == "service_name":
+            intro = f"Analyze the digital service named '{input_data}'."
+        else:
+            intro = f"Analyze the following digital service description: '{input_data}'."
+        
+        prompt = f"""
+{intro}
+
+Extract comprehensive information and return it as a JSON object with exactly these fields:
+
+{{
+    "name": "Service name",
+    "description": "Brief description of the service",
+    "founding_year": "Year founded (if known, otherwise 'Unknown')",
+    "target_audience": ["List", "of", "primary", "user", "segments"],
+    "core_features": ["List", "of", "top", "2-4", "key", "functionalities"],
+    "unique_selling_points": ["List", "of", "key", "differentiators"],
+    "business_model": "How the service makes money",
+    "tech_stack": ["List", "of", "technologies", "used"],
+    "strengths": ["List", "of", "perceived", "strengths"],
+    "weaknesses": ["List", "of", "perceived", "weaknesses"]
+}}
+
+Provide realistic, well-researched information. If information is not available, use reasonable estimates based on similar services.
+"""
+        return prompt 
